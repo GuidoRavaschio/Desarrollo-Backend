@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -16,11 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.Appointment;
+import com.uade.tpo.entity.Availability;
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.User;
 import com.uade.tpo.entity.dto.AppointmentRequest;
+import com.uade.tpo.entity.enumerations.Specialties;
 import com.uade.tpo.entity.enumerations.Weekdays;
 import com.uade.tpo.repository.AppointmentRepository;
+import com.uade.tpo.repository.DoctorRepository;
 import com.uade.tpo.service.interfaces.AppointmentServiceInterface;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,8 @@ public class AppointmentService implements AppointmentServiceInterface{
     private final AvailabilityService availabilityService;
 
     private final AppointmentRepository appointmentRepository;
+
+    private final DoctorRepository doctorRepository;
 
     @Override
     public void createAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor) {
@@ -157,5 +163,111 @@ public class AppointmentService implements AppointmentServiceInterface{
         }else{
             throw new RuntimeException("No hay imagen adjunta");
         }
+    }
+
+    @Override
+    public List<LocalDate> datesAvailableForSpecialities(Specialties specialties) {
+    List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
+    List<LocalDate> availableDates = new ArrayList<>();
+    LocalDate date = LocalDate.now();
+    int foundDates = 0;
+    while (foundDates < 6) {
+        boolean dateHasAvailableSlot = false;
+        int i = 0;
+        while (!dateHasAvailableSlot && i < doctors.size()) {
+            Doctor doctor = doctors.get(i);
+            Weekdays weekday = getWeekdayFromLocalDate(date);
+            Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor.getId(), weekday);
+            if (availability != null) {
+                int startHour = availability.getStartTime().getHour();
+                int endHour = availability.getEndTime().getHour();
+                int currentHour = startHour;
+                while (!dateHasAvailableSlot && currentHour <= endHour) {
+                    boolean isOccupied = appointmentRepository.checkAppointment(LocalTime.of(currentHour, 0), doctor.getId(), date);
+                    if (!isOccupied) {
+                        dateHasAvailableSlot = true;
+                    } else {
+                        currentHour++;
+                    }
+                }
+            }
+            i++;
+        }
+        if (dateHasAvailableSlot) {
+            availableDates.add(date);
+            foundDates++;
+        }
+        date = date.plusDays(1);
+    }
+    return availableDates;
+}
+
+public List<LocalTime> timesAvailableByDateAndSpecialties(LocalDate date, Specialties specialties){
+    List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
+    List<LocalTime> availableTimes = new ArrayList<>();
+        for (Doctor doctor:doctors) {
+            Weekdays weekday = getWeekdayFromLocalDate(date);
+            Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor.getId(), weekday);
+            if (availability != null) {
+                int startHour = availability.getStartTime().getHour();
+                int endHour = availability.getEndTime().getHour();
+                for(int i = startHour; i <= endHour; i++) {
+                    LocalTime currentTime = LocalTime.of(i, 0);
+                    boolean isOccupied = appointmentRepository.checkAppointment(currentTime, doctor.getId(), date);
+                    if (!isOccupied && !availableTimes.contains(currentTime)) {
+                        availableTimes.add(currentTime);
+                    }
+                }
+            }
+        }
+    return availableTimes;
+    }
+
+    public List<LocalDate> datesAvailableByDoctor(Long doctor_id){
+    List<LocalDate> availableDates = new ArrayList<>();
+    LocalDate date = LocalDate.now();
+    int foundDates = 0;
+    while (foundDates < 6) {
+        boolean dateHasAvailableSlot = false;
+        Weekdays weekday = getWeekdayFromLocalDate(date);
+        Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor_id, weekday);
+        if (availability != null) {
+            int startHour = availability.getStartTime().getHour();
+            int endHour = availability.getEndTime().getHour();
+            int currentHour = startHour;
+            while (!dateHasAvailableSlot && currentHour <= endHour) {
+                boolean isOccupied = appointmentRepository.checkAppointment(LocalTime.of(currentHour, 0), doctor_id, date);
+                if (!isOccupied) {
+                    dateHasAvailableSlot = true;
+                } else {
+                    currentHour++;
+                }
+            }
+        }
+        if (dateHasAvailableSlot) {
+            availableDates.add(date);
+            foundDates++;
+        }
+        date = date.plusDays(1);
+    }
+    return availableDates;
+    }
+
+    public List<LocalTime> timesAvailableByDoctorAndDate(Long doctor_id, LocalDate date){
+        List<LocalTime> availableTimes = new ArrayList<>();
+        Weekdays weekday = getWeekdayFromLocalDate(date);
+        Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor_id, weekday);
+            if (availability != null) {
+                int startHour = availability.getStartTime().getHour();
+                int endHour = availability.getEndTime().getHour();
+                for(int i = startHour; i <= endHour; i++) {
+                    LocalTime currentTime = LocalTime.of(i, 0);
+                    boolean isOccupied = appointmentRepository.checkAppointment(currentTime, doctor_id, date);
+                    if (!isOccupied && !availableTimes.contains(currentTime)) {
+                        availableTimes.add(currentTime);
+                    }
+                }
+            }
+        return availableTimes;
     }
 }

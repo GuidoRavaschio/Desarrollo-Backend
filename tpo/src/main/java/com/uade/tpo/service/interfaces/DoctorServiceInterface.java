@@ -1,10 +1,12 @@
 package com.uade.tpo.service.interfaces;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.dto.DoctorRequest;
 import com.uade.tpo.entity.dto.FilterDoctorRequest;
+import com.uade.tpo.entity.enumerations.Specialties;
 
 public interface DoctorServiceInterface {
     public void createDoctors();

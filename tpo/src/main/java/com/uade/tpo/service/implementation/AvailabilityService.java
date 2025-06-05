@@ -62,6 +62,10 @@ public void editAvailability(AvailabilityRequest availabilityRequest) {
     availabilityRepository.save(a);
 }
 
+    public Availability getAvailabilityByDoctorAndWeekday(Long doctor_id, Weekdays weekday){
+        return availabilityRepository.findByDoctorAndWeekday(doctor_id, weekday).orElse(null);
+    }
+
     private Availability create(Doctor doctor, Weekdays weekday, int shift){
         LocalTime startTime;
         LocalTime endTime;
@@ -70,7 +74,7 @@ public void editAvailability(AvailabilityRequest availabilityRequest) {
             endTime = LocalTime.of(12, 0);
         }else{
             startTime = LocalTime.of(14, 0);
-            endTime = LocalTime.of(20, 0);
+            endTime = LocalTime.of(18, 0);
         }
         Availability a = Availability.builder().doctor(doctor).weekday(weekday).startTime(startTime).endTime(endTime).build();
         availabilityRepository.save(a);
