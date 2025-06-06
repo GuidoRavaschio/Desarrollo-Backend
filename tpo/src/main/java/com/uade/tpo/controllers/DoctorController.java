@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 
 
+
 @RestController
 @RequestMapping("api/doctor")
 @RequiredArgsConstructor
@@ -67,4 +68,10 @@ public class DoctorController {
         userService.userAuthority(u, Role.USER);
         return ResponseEntity.ok(doctorService.filterDoctors(filterDoctorRequest));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<DoctorRequest>> getAllDoctors() {
+        return ResponseEntity.ok(doctorService.getAllDoctors());
+    }
+    
 }

@@ -169,38 +169,45 @@ public class AppointmentService implements AppointmentServiceInterface{
     public List<LocalDate> datesAvailableForSpecialities(Specialties specialties) {
     List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
     List<LocalDate> availableDates = new ArrayList<>();
+    if (doctors.isEmpty()) return availableDates;
+
     LocalDate date = LocalDate.now();
+    final int MAX_DATES = 6;
     int foundDates = 0;
-    while (foundDates < 6) {
+
+    while (foundDates < MAX_DATES) {
         boolean dateHasAvailableSlot = false;
-        int i = 0;
-        while (!dateHasAvailableSlot && i < doctors.size()) {
-            Doctor doctor = doctors.get(i);
+
+        for (Doctor doctor : doctors) {
             Weekdays weekday = getWeekdayFromLocalDate(date);
             Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor.getId(), weekday);
+
             if (availability != null) {
                 int startHour = availability.getStartTime().getHour();
                 int endHour = availability.getEndTime().getHour();
-                int currentHour = startHour;
-                while (!dateHasAvailableSlot && currentHour <= endHour) {
-                    boolean isOccupied = appointmentRepository.checkAppointment(LocalTime.of(currentHour, 0), doctor.getId(), date);
-                    if (!isOccupied) {
+
+                for (int hour = startHour; hour <= endHour; hour++) {
+                    if (!appointmentRepository.checkAppointment(LocalTime.of(hour, 0), doctor.getId(), date)) {
                         dateHasAvailableSlot = true;
-                    } else {
-                        currentHour++;
+                        break;
                     }
                 }
             }
-            i++;
+
+            if (dateHasAvailableSlot) break;
         }
+
         if (dateHasAvailableSlot) {
             availableDates.add(date);
             foundDates++;
         }
+
         date = date.plusDays(1);
     }
+
     return availableDates;
 }
+
 
 public List<LocalTime> timesAvailableByDateAndSpecialties(LocalDate date, Specialties specialties){
     List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);

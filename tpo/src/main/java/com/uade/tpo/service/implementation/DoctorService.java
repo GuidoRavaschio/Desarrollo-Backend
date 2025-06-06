@@ -1,7 +1,6 @@
 package com.uade.tpo.service.implementation;
 
 import java.security.SecureRandom;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,5 +99,9 @@ public class DoctorService implements DoctorServiceInterface{
         doctorRepository.deleteAll();
         availabilityService.deleteAllAvailability();
         insuranceDoctorService.deleteAllInsuranceDoctor();
+    }
+
+    public List<DoctorRequest> getAllDoctors(){
+        return mapToRequest(doctorRepository.findAll());
     }
 }
