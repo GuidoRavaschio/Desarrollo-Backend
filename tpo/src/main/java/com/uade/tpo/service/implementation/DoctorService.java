@@ -86,13 +86,14 @@ public class DoctorService implements DoctorServiceInterface{
     }
     
     private List<DoctorRequest> mapToRequest(List<Doctor> doctors){
-        List<DoctorRequest> results = new ArrayList<>();
-        for (Doctor doctor : doctors) {
-                DoctorRequest d = DoctorRequest.builder().id(doctor.getId()).name(doctor.getName()).specialties(doctor.getSpecialties().toString()).build();
-                results.add(d);
-            }
-        return results;
-    }
+    return doctors.stream().map(doctor ->
+        DoctorRequest.builder()
+            .id(doctor.getId())
+            .name(doctor.getName())
+            .specialties(doctor.getSpecialties().name()) // ajusta según tu modelo
+            .build()
+    ).toList();
+}
 
     @Override
     public void deleteDoctors() {
