@@ -105,26 +105,22 @@ public class AppointmentController {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
     }
 
-    @GetMapping("/{specialties}/date")
-    public ResponseEntity<List<LocalDate>> datesAvailableForSpecialities(@RequestHeader("Authorization") String code, @PathVariable String specialties) {
+    @GetMapping("/date")
+    public ResponseEntity<List<LocalDate>> datesAvailable(@RequestHeader("Authorization") String code) {
         User u = userService.getUser(code);
         userService.userAuthority(u, Role.USER);
-        return ResponseEntity.ok(appointmentService.datesAvailableForSpecialities(Specialties.valueOf(specialties)));
+        return ResponseEntity.ok(appointmentService.datesAvailable());
     }
     
-    @GetMapping("/{specialties}/{date}/time")
+    @GetMapping("/time")
     public ResponseEntity<List<LocalTime>> timesAvailableByDateAndSpecialties(
-        @RequestHeader("Authorization") String code,
-        @PathVariable String specialties,
-        @PathVariable String date) {
+        @RequestHeader("Authorization") String code) {
     User u = userService.getUser(code);
     userService.userAuthority(u, Role.USER);
     try {
-        Specialties enumSpecialty = Specialties.valueOf(specialties.toUpperCase());
-        LocalDate localDate = LocalDate.parse(date);
-        return ResponseEntity.ok(appointmentService.timesAvailableByDateAndSpecialties(localDate, enumSpecialty));
+        return ResponseEntity.ok(appointmentService.timesAvailable());
     } catch (IllegalArgumentException | DateTimeParseException e) {
-        throw new RuntimeException("Especialidad inválida: " + specialties);
+        throw new RuntimeException("Especialidad inválida: ");
     }
 }
     @GetMapping("/specialties")

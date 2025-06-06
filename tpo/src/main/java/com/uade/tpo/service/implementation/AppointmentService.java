@@ -166,34 +166,15 @@ public class AppointmentService implements AppointmentServiceInterface{
         }
     }
 
-    @Override
-    public List<LocalDate> datesAvailableForSpecialities(Specialties specialties) {
-    List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
+    public List<LocalDate> datesAvailable() {
     List<LocalDate> availableDates = new ArrayList<>();
-    if (doctors.isEmpty()) return availableDates;
     LocalDate date = LocalDate.now();
-    final int MAX_DATES = 6;
-    int foundDates = 0;
-    while (foundDates < MAX_DATES) {
-        boolean dateHasAvailableSlot = false;
-        for (Doctor doctor : doctors) {
-            Weekdays weekday = getWeekdayFromLocalDate(date);
-            Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor.getId(), weekday);
-            if (availability != null && weekday != null) {
-                int startHour = availability.getStartTime().getHour();
-                int endHour = availability.getEndTime().getHour();
-                for (int hour = startHour; hour <= endHour; hour++) {
-                    if (!appointmentRepository.checkAppointment(LocalTime.of(hour, 0), doctor.getId(), date)) {
-                        dateHasAvailableSlot = true;
-                        break;
-                    }
-                }
-            }
-            if (dateHasAvailableSlot) break;
-        }
-        if (dateHasAvailableSlot) {
+    int i = 0;
+    while (i !=6){
+        Weekdays w = getWeekdayFromLocalDate(date);
+        if (w != null){
             availableDates.add(date);
-            foundDates++;
+            i++;
         }
         date = date.plusDays(1);
     }
@@ -201,24 +182,14 @@ public class AppointmentService implements AppointmentServiceInterface{
 }
 
 
-public List<LocalTime> timesAvailableByDateAndSpecialties(LocalDate date, Specialties specialties){
-    List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
+public List<LocalTime> timesAvailable(){
     List<LocalTime> availableTimes = new ArrayList<>();
-        for (Doctor doctor:doctors) {
-            Weekdays weekday = getWeekdayFromLocalDate(date);
-            Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor.getId(), weekday);
-            if (availability != null) {
-                int startHour = availability.getStartTime().getHour();
-                int endHour = availability.getEndTime().getHour();
-                for(int i = startHour; i <= endHour; i++) {
-                    LocalTime currentTime = LocalTime.of(i, 0);
-                    boolean isOccupied = appointmentRepository.checkAppointment(currentTime, doctor.getId(), date);
-                    if (!isOccupied && !availableTimes.contains(currentTime)) {
-                        availableTimes.add(currentTime);
-                    }
-                }
-            }
-        }
+    for (int i=8; i<=12;i++){
+        availableTimes.add(LocalTime.of(i, 0));
+    }
+    for (int i=14; i<=18;i++){
+        availableTimes.add(LocalTime.of(i, 0));
+    }
     return availableTimes;
     }
 
@@ -230,7 +201,7 @@ public List<LocalTime> timesAvailableByDateAndSpecialties(LocalDate date, Specia
         boolean dateHasAvailableSlot = false;
         Weekdays weekday = getWeekdayFromLocalDate(date);
         Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor_id, weekday);
-        if (availability != null) {
+        if (availability != null && weekday != null) {
             int startHour = availability.getStartTime().getHour();
             int endHour = availability.getEndTime().getHour();
             int currentHour = startHour;
@@ -256,7 +227,7 @@ public List<LocalTime> timesAvailableByDateAndSpecialties(LocalDate date, Specia
         List<LocalTime> availableTimes = new ArrayList<>();
         Weekdays weekday = getWeekdayFromLocalDate(date);
         Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor_id, weekday);
-            if (availability != null) {
+            if (availability != null && weekday != null) {
                 int startHour = availability.getStartTime().getHour();
                 int endHour = availability.getEndTime().getHour();
                 for(int i = startHour; i <= endHour; i++) {
