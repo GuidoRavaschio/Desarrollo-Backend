@@ -158,4 +158,14 @@ public class AppointmentController {
         }
     }
     
+    @PostMapping("/create/{specialty}")
+    public ResponseEntity<?> createAppointmentBySpecialty(@RequestHeader("Authorization") String token,
+            @PathVariable String specialty,
+            @RequestBody AppointmentRequest appointmentRequest) {
+        User user = userService.getUser(token);
+        userService.userAuthority(user, Role.USER);
+        appointmentService.createAppointmentBySpecialties(Specialties.valueOf(specialty), appointmentRequest.getDate(), appointmentRequest.getTime(), user);
+        return ResponseEntity.ok().build();
+    }
+    
 }
