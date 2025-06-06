@@ -101,6 +101,7 @@ public class AppointmentService implements AppointmentServiceInterface{
             throw new RuntimeException("El turno no está disponible");
         }
         Weekdays wd = getWeekdayFromLocalDate(date);
+        if (wd == null){throw new RuntimeException("Dia no valido");}
         boolean available = availabilityService
             .getAvailability(List.of(doctorId), List.of(wd), time)
             .size() == 1;
@@ -119,7 +120,7 @@ public class AppointmentService implements AppointmentServiceInterface{
         case WEDNESDAY -> Weekdays.Miercoles;
         case THURSDAY -> Weekdays.Jueves;
         case FRIDAY -> Weekdays.Viernes;
-        default -> throw new IllegalArgumentException("Día no disponible: " + day);
+        default -> null;
     };
     }
     private AppointmentRequest mapToRequest(Appointment appointment){
@@ -170,22 +171,17 @@ public class AppointmentService implements AppointmentServiceInterface{
     List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
     List<LocalDate> availableDates = new ArrayList<>();
     if (doctors.isEmpty()) return availableDates;
-
     LocalDate date = LocalDate.now();
     final int MAX_DATES = 6;
     int foundDates = 0;
-
     while (foundDates < MAX_DATES) {
         boolean dateHasAvailableSlot = false;
-
         for (Doctor doctor : doctors) {
             Weekdays weekday = getWeekdayFromLocalDate(date);
             Availability availability = availabilityService.getAvailabilityByDoctorAndWeekday(doctor.getId(), weekday);
-
-            if (availability != null) {
+            if (availability != null && weekday != null) {
                 int startHour = availability.getStartTime().getHour();
                 int endHour = availability.getEndTime().getHour();
-
                 for (int hour = startHour; hour <= endHour; hour++) {
                     if (!appointmentRepository.checkAppointment(LocalTime.of(hour, 0), doctor.getId(), date)) {
                         dateHasAvailableSlot = true;
@@ -193,18 +189,14 @@ public class AppointmentService implements AppointmentServiceInterface{
                     }
                 }
             }
-
             if (dateHasAvailableSlot) break;
         }
-
         if (dateHasAvailableSlot) {
             availableDates.add(date);
             foundDates++;
         }
-
         date = date.plusDays(1);
     }
-
     return availableDates;
 }
 
@@ -276,5 +268,21 @@ public List<LocalTime> timesAvailableByDateAndSpecialties(LocalDate date, Specia
                 }
             }
         return availableTimes;
+    }
+
+    public void createAppointmentBySpecialties(Specialties specialties, LocalDate date, LocalTime time, User user){
+        List<Doctor> doctors = doctorRepository.filterBySpecialties(specialties);
+        int i = 0;
+        while (i < doctors.size()){
+            if (!appointmentRepository.checkAppointment(time, doctors.get(i).getId(), date)){
+                Appointment a = new Appointment();
+                a.setUser(user);
+                a.setDate(date);
+                a.setTime(time);
+                a.setDoctor(doctors.get(i));
+                appointmentRepository.save(a);
+                i = doctors.size();
+            }
+        }
     }
 }
