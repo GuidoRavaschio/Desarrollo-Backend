@@ -4,6 +4,8 @@ import java.sql.Blob;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -38,6 +40,7 @@ public class Appointment {
     private LocalDate date;
 
     @Column
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime time;
 
     @Column
