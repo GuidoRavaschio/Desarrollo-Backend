@@ -25,8 +25,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByDate(LocalDate date);
 
-    @Query("SELECT a FROM Appointment a WHERE a.user.id = :user_id")
-    List<Appointment> findByUserId(@Param("user_id") Long user_id);
+    @Query("SELECT a FROM Appointment a WHERE a.user.id = :user_id AND a.date > :date")
+    List<Appointment> findByUserId(@Param("user_id") Long user_id, @Param("date") LocalDate date);
 
     boolean existsByUserIdAndDoctorIdAndDateAndTime(Long userId, Long doctorId, LocalDate date, LocalTime time);
     boolean existsByDoctorIdAndDateAndTime(Long doctorId, LocalDate date, LocalTime time);
@@ -37,4 +37,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("SELECT a.time FROM Appointment a WHERE a.date = :date AND a.doctor.id = :doctor_id")
     List<LocalTime> timesNotAvailableDoctor(@Param("date") LocalDate date, @Param("doctor_id") Long doctor_id);
+
+    @Query("SELECT a FROM Appointment a WHERE a.user.id = :user_id AND a.date < :date")
+    List<Appointment> findPreviousAppointmentsByUserId(@Param("user_id") Long user_id, @Param("date") LocalDate date);
 }

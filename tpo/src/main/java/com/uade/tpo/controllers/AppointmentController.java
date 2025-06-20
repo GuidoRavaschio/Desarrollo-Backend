@@ -66,6 +66,12 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointments(u));
     }
     
+    @GetMapping("/history")
+    public ResponseEntity<List<AppointmentRequest>> getAppointmentsHistory(@RequestHeader("Authorization") String code) {
+        User u = userService.getUser(code);
+        userService.userAuthority(u, Role.USER);
+        return ResponseEntity.ok(appointmentService.getAppointmentHistory(u));
+    }
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteAppointment(@RequestBody AppointmentRequest appointmentRequest, 
             @RequestHeader("Authorization") String code){

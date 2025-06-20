@@ -53,7 +53,15 @@ public class AppointmentService implements AppointmentServiceInterface{
     @Override
     public List<AppointmentRequest> getAppointments(User user) {
         return appointmentRepository
-            .findByUserId(user.getId())
+            .findByUserId(user.getId(), LocalDate.now())
+            .stream()
+            .map(this::mapToRequest)
+            .collect(Collectors.toList());
+    }
+
+    public List<AppointmentRequest> getAppointmentHistory(User user){
+        return appointmentRepository
+            .findPreviousAppointmentsByUserId(user.getId(), LocalDate.now())
             .stream()
             .map(this::mapToRequest)
             .collect(Collectors.toList());
