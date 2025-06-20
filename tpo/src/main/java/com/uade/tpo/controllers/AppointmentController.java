@@ -2,13 +2,9 @@ package com.uade.tpo.controllers;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.User;
+import com.uade.tpo.entity.dto.AppointmentData;
 import com.uade.tpo.entity.dto.AppointmentRequest;
 import com.uade.tpo.entity.enumerations.Role;
 import com.uade.tpo.entity.enumerations.Specialties;
@@ -60,14 +57,14 @@ public class AppointmentController {
     }
     
     @GetMapping("/from-user")
-    public ResponseEntity<List<AppointmentRequest>> getAppointments(@RequestHeader("Authorization") String code) {
+    public ResponseEntity<List<AppointmentData>> getAppointments(@RequestHeader("Authorization") String code) {
         User u = userService.getUser(code);
         userService.userAuthority(u, Role.USER);
         return ResponseEntity.ok(appointmentService.getAppointments(u));
     }
     
     @GetMapping("/history")
-    public ResponseEntity<List<AppointmentRequest>> getAppointmentsHistory(@RequestHeader("Authorization") String code) {
+    public ResponseEntity<List<AppointmentData>> getAppointmentsHistory(@RequestHeader("Authorization") String code) {
         User u = userService.getUser(code);
         userService.userAuthority(u, Role.USER);
         return ResponseEntity.ok(appointmentService.getAppointmentHistory(u));
@@ -109,37 +106,6 @@ public class AppointmentController {
         userService.userAuthority(u, Role.USER);
         byte[] image = appointmentService.getImage(appointmentId, u);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
-    }
-
-    @GetMapping("/date")
-    public ResponseEntity<List<LocalDate>> datesAvailable(@RequestHeader("Authorization") String code) {
-        User u = userService.getUser(code);
-        userService.userAuthority(u, Role.USER);
-        return ResponseEntity.ok(appointmentService.datesAvailable());
-    }
-    
-    @GetMapping("/time/{specialties}/{date}")
-    public ResponseEntity<List<LocalTime>> timesAvailableByDateAndSpecialties(
-        @RequestHeader("Authorization") String code, @PathVariable Specialties specialties, @PathVariable LocalDate date) {
-        User u = userService.getUser(code);
-        userService.userAuthority(u, Role.USER);
-        try {
-            return ResponseEntity.ok(appointmentService.timesAvailableBySpecialty(specialties, date));
-        } catch (IllegalArgumentException | DateTimeParseException e) {
-            throw new RuntimeException("Especialidad inválida: ");
-        }
-    }
-
-    @GetMapping("/time/doctor/{doctor_id}/{date}")
-    public ResponseEntity<List<LocalTime>> timesAvailableByDateAndSpecialties(
-        @RequestHeader("Authorization") String code, @PathVariable Long doctor_id, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        User u = userService.getUser(code);
-        userService.userAuthority(u, Role.USER);
-        try {
-            return ResponseEntity.ok(appointmentService.timesAvailableByDoctor(doctor_id, date));
-        } catch (IllegalArgumentException | DateTimeParseException e) {
-            throw new RuntimeException("Doctor inválido: ");
-        }
     }
     
     @GetMapping("/specialties")

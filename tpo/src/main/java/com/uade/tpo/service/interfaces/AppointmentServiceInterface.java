@@ -3,17 +3,17 @@ package com.uade.tpo.service.interfaces;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.time.LocalDate;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.User;
 import com.uade.tpo.entity.dto.AppointmentRequest;
+import com.uade.tpo.entity.dto.AppointmentData;
 
 public interface AppointmentServiceInterface {
     public void createAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor);
-    public List<AppointmentRequest> getAppointments(User user);
+    public List<AppointmentData> getAppointments(User user);
     public void deleteAppointment(AppointmentRequest appointmentRequest, User user);
     public void editAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor);
     public byte[] getImage(Long appointment_id, User user) throws SQLException;

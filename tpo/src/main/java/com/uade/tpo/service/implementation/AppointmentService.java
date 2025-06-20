@@ -5,11 +5,8 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -20,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.uade.tpo.entity.Appointment;
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.User;
+import com.uade.tpo.entity.dto.AppointmentData;
 import com.uade.tpo.entity.dto.AppointmentRequest;
 import com.uade.tpo.entity.enumerations.Specialties;
 import com.uade.tpo.repository.AppointmentRepository;
@@ -51,19 +49,19 @@ public class AppointmentService implements AppointmentServiceInterface{
     }
 
     @Override
-    public List<AppointmentRequest> getAppointments(User user) {
+    public List<AppointmentData> getAppointments(User user) {
         return appointmentRepository
             .findByUserId(user.getId(), LocalDate.now())
             .stream()
-            .map(this::mapToRequest)
+            .map(this::mapToData)
             .collect(Collectors.toList());
     }
 
-    public List<AppointmentRequest> getAppointmentHistory(User user){
+    public List<AppointmentData> getAppointmentHistory(User user){
         return appointmentRepository
             .findPreviousAppointmentsByUserId(user.getId(), LocalDate.now())
             .stream()
-            .map(this::mapToRequest)
+            .map(this::mapToData)
             .collect(Collectors.toList());
     }
 
@@ -112,12 +110,12 @@ public class AppointmentService implements AppointmentServiceInterface{
         }
     }
 
-    private AppointmentRequest mapToRequest(Appointment appointment){
-        return AppointmentRequest.builder()
+    private AppointmentData mapToData(Appointment appointment){
+        return AppointmentData.builder()
                                 .date(appointment.getDate())
-                                .doctorId(appointment.getDoctor().getId())
+                                .doctor(appointment.getDoctor().getName())
                                 .time(appointment.getTime())
-                                .userId(appointment.getUser().getId())
+                                .specialty(appointment.getDoctor().getSpecialties())
                                 .id(appointment.getId())
                                 .build();
     }
@@ -153,58 +151,6 @@ public class AppointmentService implements AppointmentServiceInterface{
         }else{
             throw new RuntimeException("No hay imagen adjunta");
         }
-    }
-
-    public List<LocalDate> datesAvailable() {
-    List<LocalDate> availableDates = new ArrayList<>();
-    LocalDate date = LocalDate.now();
-    int i = 0;
-    while (i !=6){
-        availableDates.add(date);
-        i++;
-        date = date.plusDays(1);
-    }
-    return availableDates;
-}
-
-public List<LocalTime> timesAvailableBySpecialty(Specialties specialty, LocalDate date) {
-    List<Doctor> doctors = doctorRepository.findBySpecialties(specialty);
-    List<LocalTime> notAvailableTimes = appointmentRepository.timesNotAvailable(date, specialty);
-    Map<LocalTime, Long> timeFrequency = notAvailableTimes.stream()
-            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    List<LocalTime> availableTimes = new ArrayList<>();
-    for (int i = 9; i <= 20; i++) {
-        LocalTime time = LocalTime.of(i, 0);
-        long count = timeFrequency.getOrDefault(time, 0L);
-        if (count < doctors.size()) {
-            availableTimes.add(time);
-        }
-    }
-    return availableTimes;
-}
-
-public List<LocalTime> timesAvailableByDoctor(Long doctor_id, LocalDate date){
-    List<LocalTime> notAvailableTimes = appointmentRepository.timesNotAvailableDoctor(date, doctor_id);
-    List<LocalTime> timesAvailable = new ArrayList<>();
-    System.out.println(notAvailableTimes.toString());
-    for (int i = 9; i <= 20; i++){
-        LocalTime time = LocalTime.of(i, 0);
-        if (!notAvailableTimes.contains(time)){
-            timesAvailable.add(time);
-        }
-    }
-    return timesAvailable;
-}
-
-public List<LocalTime> timesAvailable(){
-    List<LocalTime> availableTimes = new ArrayList<>();
-    for (int i=8; i<=12;i++){
-        availableTimes.add(LocalTime.of(i, 0));
-    }
-    for (int i=14; i<=18;i++){
-        availableTimes.add(LocalTime.of(i, 0));
-    }
-    return availableTimes;
     }
 
     public void createAppointmentBySpecialties(Specialties specialties, LocalDate date, LocalTime time, User user){
