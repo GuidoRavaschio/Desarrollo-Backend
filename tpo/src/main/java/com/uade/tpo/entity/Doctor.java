@@ -42,7 +42,4 @@ public class Doctor {
 
     @OneToMany(mappedBy = "doctor")
     private List<Appointment> appointments;
-
-    @OneToMany(mappedBy = "doctor")
-    private List<Availability> schedule;
 }

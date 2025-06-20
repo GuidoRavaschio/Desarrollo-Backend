@@ -11,6 +11,7 @@ import com.uade.tpo.entity.InsuranceDoctor;
 import com.uade.tpo.entity.dto.DoctorRequest;
 import com.uade.tpo.entity.dto.InsuranceDoctorRequest;
 import com.uade.tpo.entity.enumerations.Company;
+import com.uade.tpo.entity.enumerations.Specialties;
 import com.uade.tpo.repository.DoctorRepository;
 import com.uade.tpo.repository.InsuranceDoctorRepository;
 import com.uade.tpo.service.interfaces.InsuranceDoctorServiceInterface;
@@ -72,5 +73,9 @@ public void deleteInsuranceDoctor(InsuranceDoctorRequest insuranceDoctorRequest)
     @Override
     public void deleteAllInsuranceDoctor() {
         insuranceDoctorRepository.deleteAll();
+    }
+
+    public List<Doctor> filterDoctors(List<Company> companies, Specialties specialty){
+        return insuranceDoctorRepository.findByCompaniesAndOptionalSpecialties(companies, specialty);
     }
 }

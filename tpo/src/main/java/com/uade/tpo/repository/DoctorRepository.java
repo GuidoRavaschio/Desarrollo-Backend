@@ -14,10 +14,12 @@ import com.uade.tpo.entity.enumerations.Specialties;
 @Repository
 public interface DoctorRepository extends JpaRepository<Doctor, Long>{
     @Query("SELECT d FROM Doctor d WHERE :specialties IS NULL OR d.specialties = :specialties")
-    List<Doctor> filterBySpecialties(@Param("specialties") Specialties specialties);
+    List<Doctor> findBySpecialties(@Param("specialties") Specialties specialties);
 
     @Query("SELECT d FROM Doctor d WHERE d.id IN :doctors")
     List<Doctor> findDoctors(@Param("doctors") List<Long> doctors);
 
     List<Doctor> findByNameContaining(String name);
+
+
 }
