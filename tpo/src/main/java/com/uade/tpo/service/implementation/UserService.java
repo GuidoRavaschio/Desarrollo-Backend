@@ -23,6 +23,8 @@ import com.uade.tpo.security.AuthenticationResponse;
 import com.uade.tpo.security.Jwt;
 import com.uade.tpo.service.interfaces.UserServiceInterface;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class UserService implements UserServiceInterface {
 
@@ -41,7 +43,7 @@ public class UserService implements UserServiceInterface {
     @Autowired
     private Jwt jwt;
 
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public AuthenticationResponse registerUser(RegisterRequest registerRequest){
@@ -153,6 +155,7 @@ public class UserService implements UserServiceInterface {
         emailService.sendEmail(email, emailContent.get(0), emailContent.get(1));
     }
 
+    @Transactional
     private TemporaryData save(int data, User user) {
         tdRepository.deleteByUser(user);
         TemporaryData temp = TemporaryData.builder()
