@@ -17,7 +17,11 @@ public interface TemporaryDataRepository extends JpaRepository<TemporaryData, Lo
     @Modifying
     @Transactional
     void deleteByUser(User user);
-    void deleteByExpiresAtBefore(LocalDateTime now);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM TemporaryData td WHERE td.expiresAt < :now")
+    int deleteByExpiresAtBefore(@Param("now") LocalDateTime now);
 
     @Query("SELECT td FROM TemporaryData td WHERE td.user.email = :email")
     Optional<TemporaryData> findByEmail(@Param("email") String email);
