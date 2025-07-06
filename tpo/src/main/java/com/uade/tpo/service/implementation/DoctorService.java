@@ -59,7 +59,13 @@ public class DoctorService implements DoctorServiceInterface{
 
     @Override
     public List<DoctorRequest> filterDoctors(FilterDoctorRequest filterDoctorRequest) {
-        List<Doctor> doc = insuranceDoctorService.filterDoctors(filterDoctorRequest.getCompanies(), filterDoctorRequest.getSpecialty());
+        List<Company> companies = filterDoctorRequest.getCompanies();
+        List<Doctor> doc;
+        if (companies.isEmpty()){
+            doc = doctorRepository.findBySpecialties(filterDoctorRequest.getSpecialty());
+        }else{
+            doc = insuranceDoctorService.filterDoctors(filterDoctorRequest.getCompanies(), filterDoctorRequest.getSpecialty());
+        }
         return mapToRequest(doc);
     }
     
