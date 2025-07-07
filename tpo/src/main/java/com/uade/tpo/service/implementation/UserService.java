@@ -200,6 +200,13 @@ public class UserService implements UserServiceInterface {
         }
     }
     
+    public UserRequest getUserRequest(String code){
+        User u = getUser(code);
+        UserRequest ur = new UserRequest();
+        ur.setEmail(u.getEmail());
+        ur.setName(u.getName());
+        return ur;
+    }
     private void checkForErrors(RegisterRequest userRequest){
         int dni = userRequest.getDNI();
         if (userRepository.existsByDNI(dni)){

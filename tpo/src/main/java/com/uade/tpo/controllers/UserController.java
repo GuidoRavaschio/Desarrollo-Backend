@@ -25,6 +25,7 @@ import com.uade.tpo.service.implementation.UserService;
 import lombok.RequiredArgsConstructor;
 
 
+
 @RestController
 @RequestMapping("api/user")
 @RequiredArgsConstructor
@@ -94,4 +95,10 @@ public class UserController {
         userService.editUser(code, userRequest);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/get-user")
+    public ResponseEntity<UserRequest> getUser(@RequestHeader("Authorization") String code) {
+        return ResponseEntity.ok(userService.getUserRequest(code));
+    }
+    
 }
