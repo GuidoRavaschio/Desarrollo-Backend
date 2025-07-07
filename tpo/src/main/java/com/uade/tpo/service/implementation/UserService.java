@@ -140,9 +140,20 @@ public class UserService implements UserServiceInterface {
         User u = getUser(code);
         UserRequest userRequest = new UserRequest();
         userRequest.setCompany(u.getCompany());
-        userRequest.setAffiliateNumber(cryptoService.decrypt(u.getAffiliateNumber()));
+        String encrypted = u.getAffiliateNumber();
+        if (encrypted != null && !encrypted.isBlank()) {
+            try {
+                String decrypted = cryptoService.decrypt(encrypted);
+                userRequest.setAffiliateNumber(decrypted);
+            } catch (Exception e) {
+                throw new RuntimeException("Error desencriptando número de afiliado", e);
+            }
+        } else {
+            userRequest.setAffiliateNumber(null); // no tiene número cargado
+        }
         return userRequest;
-    }
+}
+
 
     public List<Company> getCompanies(){
         return List.of(Company.values());
