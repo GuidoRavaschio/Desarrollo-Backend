@@ -1,5 +1,7 @@
 package com.uade.tpo.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,10 +18,12 @@ import com.uade.tpo.entity.User;
 import com.uade.tpo.entity.dto.RegisterRequest;
 import com.uade.tpo.entity.dto.TdRequest;
 import com.uade.tpo.entity.dto.UserRequest;
+import com.uade.tpo.entity.enumerations.Company;
 import com.uade.tpo.security.AuthenticationResponse;
 import com.uade.tpo.service.implementation.UserService;
 
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("api/user")
@@ -71,6 +75,11 @@ public class UserController {
     @GetMapping("/insurance/get")
     public ResponseEntity<UserRequest> getInsurance(@RequestHeader("Authorization") String code) {
         return ResponseEntity.ok(userService.getInsurance(code));
+    }
+    
+    @GetMapping("/companies")
+    public ResponseEntity<List<Company>> getCompanies() {
+        return ResponseEntity.ok(userService.getCompanies());
     }
     
     
