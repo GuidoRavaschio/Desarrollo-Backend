@@ -154,11 +154,6 @@ public class UserService implements UserServiceInterface {
         return userRequest;
 }
 
-
-    public List<Company> getCompanies(){
-        return List.of(Company.values());
-    }
-
     @Override
     public void requestChangePassword(String email){
         SecureRandom random = new SecureRandom();

@@ -79,7 +79,7 @@ public class UserController {
     
     @GetMapping("/companies")
     public ResponseEntity<List<Company>> getCompanies() {
-        return ResponseEntity.ok(userService.getCompanies());
+        return ResponseEntity.ok(List.of(Company.values()));
     }
     
     
