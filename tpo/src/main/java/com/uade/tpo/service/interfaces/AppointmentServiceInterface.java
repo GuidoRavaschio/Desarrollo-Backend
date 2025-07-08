@@ -8,14 +8,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.User;
-import com.uade.tpo.entity.dto.AppointmentRequest;
 import com.uade.tpo.entity.dto.AppointmentData;
+import com.uade.tpo.entity.dto.AppointmentRequest;
 
 public interface AppointmentServiceInterface {
     public void createAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor);
     public List<AppointmentData> getAppointments(User user);
     public void deleteAppointment(AppointmentRequest appointmentRequest, User user);
     public void editAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor);
-    public byte[] getImage(Long appointment_id, User user) throws SQLException;
+    public String getImage(Long appointment_id, User user) throws SQLException;
     public void setImage(Long appointment_id, MultipartFile image) throws SQLException, IOException;
 }

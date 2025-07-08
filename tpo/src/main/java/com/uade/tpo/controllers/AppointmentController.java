@@ -100,12 +100,12 @@ public class AppointmentController {
     }
 
     @GetMapping("/result/{appointmentId}")
-    public ResponseEntity<byte[]> getImage(@PathVariable Long appointmentId, 
+    public ResponseEntity<String> getImage(@PathVariable Long appointmentId, 
             @RequestHeader("Authorization") String code) throws SQLException {
         User u = userService.getUser(code);
         userService.userAuthority(u, Role.USER);
-        byte[] image = appointmentService.getImage(appointmentId, u);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+        String image = appointmentService.getImage(appointmentId, u);
+        return ResponseEntity.ok(image);
     }
     
     @GetMapping("/specialties")

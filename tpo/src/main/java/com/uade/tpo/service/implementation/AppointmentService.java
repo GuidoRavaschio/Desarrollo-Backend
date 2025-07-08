@@ -134,13 +134,13 @@ public class AppointmentService implements AppointmentServiceInterface{
     }
 
     @Override
-    public byte[] getImage(Long appointment_id, User user) throws SQLException {
+    public String getImage(Long appointment_id, User user) throws SQLException {
         Appointment a = fetchOwnedAppointment(appointment_id, user);
         Blob blob = a.getImage();
         if (blob == null) {
             throw new RuntimeException("No hay imagen para este turno");
         }
-        return blob.getBytes(1, (int) blob.length());
+        return transform(blob);
     }
 
     private Appointment fetchOwnedAppointment(Long id, User user) {
