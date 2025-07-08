@@ -1,8 +1,11 @@
 package com.uade.tpo.controllers;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.User;
 import com.uade.tpo.entity.dto.DoctorRequest;
@@ -74,4 +79,14 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.getAllDoctors());
     }
     
+    @PostMapping(value = "/image/{doctorId}",
+                consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> setImage(@PathVariable Long doctorId,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader("Authorization") String code) throws SQLException, IOException {
+        User u = userService.getUser(code);
+        userService.userAuthority(u, Role.ADMIN);
+        doctorService.setImage(doctorId, file);
+        return ResponseEntity.ok().build();
+    }
 }

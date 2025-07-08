@@ -1,10 +1,16 @@
 package com.uade.tpo.service.implementation;
 
+import java.io.IOException;
 import java.security.SecureRandom;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
+
+import javax.sql.rowset.serial.SerialBlob;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.Doctor;
 import com.uade.tpo.entity.dto.DoctorRequest;
@@ -68,13 +74,23 @@ public class DoctorService implements DoctorServiceInterface{
         }
         return mapToRequest(doc);
     }
-    
-    private List<DoctorRequest> mapToRequest(List<Doctor> doctors){
+
+    private byte[] transform(Blob blob) {
+    if (blob == null) return null;
+    try {
+        return blob.getBytes(1, (int) blob.length());
+    } catch (SQLException e) {
+        return null; // Si falla al obtener la imagen, devolvés null
+    }
+}
+
+private List<DoctorRequest> mapToRequest(List<Doctor> doctors) {
     return doctors.stream().map(doctor ->
         DoctorRequest.builder()
             .id(doctor.getId())
             .name(doctor.getName())
-            .specialties(doctor.getSpecialties().name()) // ajusta según tu modelo
+            .specialties(doctor.getSpecialties().name())
+            .image(transform(doctor.getImage()))
             .build()
     ).toList();
 }
@@ -87,5 +103,18 @@ public class DoctorService implements DoctorServiceInterface{
 
     public List<DoctorRequest> getAllDoctors(){
         return mapToRequest(doctorRepository.findAll());
+    }
+
+    public void setImage(Long doctor_id, MultipartFile image) throws SQLException, IOException {
+        if (image != null && !image.isEmpty()) {
+            byte[] imageBytes = image.getBytes();
+            Blob blob =  new SerialBlob(imageBytes);
+            Doctor d = doctorRepository.findById(doctor_id)
+                            .orElseThrow(() -> new RuntimeException("El doctor no existe"));
+            d.setImage(blob);
+            doctorRepository.save(d);
+        }else{
+            throw new RuntimeException("No hay imagen adjunta");
+        }
     }
 }
