@@ -84,8 +84,6 @@ public class DoctorController {
     public ResponseEntity<?> setImage(@PathVariable Long doctorId,
             @RequestParam("file") MultipartFile file,
             @RequestHeader("Authorization") String code) throws SQLException, IOException {
-        User u = userService.getUser(code);
-        userService.userAuthority(u, Role.ADMIN);
         doctorService.setImage(doctorId, file);
         return ResponseEntity.ok().build();
     }
