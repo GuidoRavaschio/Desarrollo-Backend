@@ -201,7 +201,7 @@ public class UserService implements UserServiceInterface {
     public UserRequest getUserRequest(String code){
         User u = getUser(code);
         UserRequest ur = new UserRequest();
-        ur.setEmail(u.getEmail());
+        ur.setDNI(u.getDNI());
         ur.setName(u.getName());
         return ur;
     }
