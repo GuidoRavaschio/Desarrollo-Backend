@@ -9,5 +9,5 @@ public class DoctorRequest {
     private Long id;
     private String name;
     private String specialties;
-    private byte[] image;
+    private String image;
 }

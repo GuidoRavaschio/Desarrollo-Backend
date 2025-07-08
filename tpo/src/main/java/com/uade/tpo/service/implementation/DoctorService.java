@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -75,12 +76,14 @@ public class DoctorService implements DoctorServiceInterface{
         return mapToRequest(doc);
     }
 
-    private byte[] transform(Blob blob) {
+
+private String transform(Blob blob) {
     if (blob == null) return null;
     try {
-        return blob.getBytes(1, (int) blob.length());
+        byte[] bytes = blob.getBytes(1, (int) blob.length());
+        return Base64.getEncoder().encodeToString(bytes);
     } catch (SQLException e) {
-        return null; // Si falla al obtener la imagen, devolvés null
+        return null; // Fallo al procesar imagen, devolvés null
     }
 }
 
