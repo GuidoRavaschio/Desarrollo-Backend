@@ -91,9 +91,8 @@ public class UserController {
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Void> editUser(@RequestHeader("Authorization") String code, @RequestBody UserRequest userRequest) {
-        userService.editUser(code, userRequest);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AuthenticationResponse> editUser(@RequestHeader("Authorization") String code, @RequestBody UserRequest userRequest) {
+        return ResponseEntity.ok(userService.editUser(code, userRequest));
     }
 
     @GetMapping("/get-user")

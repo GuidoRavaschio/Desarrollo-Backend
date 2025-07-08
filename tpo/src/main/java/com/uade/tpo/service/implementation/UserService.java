@@ -99,21 +99,22 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public void editUser(String code, UserRequest userRequest) {
+    public AuthenticationResponse editUser(String code, UserRequest userRequest) {
         User u = getUser(code);
         String name = userRequest.getName();
         if (name != null){
             u.setName(name);
         }
-        String password = userRequest.getPassword();
-        if (password != null){
-            u.setPassword(passwordEncoder.encode(password));
-        }else{
-            throw new RuntimeException("La contraseña no puede ser vacia");
+        String email = userRequest.getEmail();
+        if (email != null){
+            u.setEmail(email);
         }
         userRepository.save(u);
         List<String> emailContent = emailService.createEmailContentForUser(u.getName(), "editado");
         emailService.sendEmail(u.getEmail(), emailContent.get(0), emailContent.get(1));
+        return AuthenticationResponse.builder()
+                                    .authToken(jwt.generateToken(u.getEmail()))
+                                    .build();
     }
 
     @Override
