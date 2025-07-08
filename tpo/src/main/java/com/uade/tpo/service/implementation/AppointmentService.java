@@ -5,6 +5,7 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -110,6 +111,17 @@ public class AppointmentService implements AppointmentServiceInterface{
         }
     }
 
+    private String transform(Blob blob) {
+    if (blob == null) return null;
+    try {
+        byte[] bytes = blob.getBytes(1, (int) blob.length());
+        return Base64.getEncoder().encodeToString(bytes);
+    } catch (SQLException e) {
+        return null; // Fallo al procesar imagen, devolvés null
+    }
+}
+
+
     private AppointmentData mapToData(Appointment appointment){
         return AppointmentData.builder()
                                 .date(appointment.getDate())
@@ -117,6 +129,7 @@ public class AppointmentService implements AppointmentServiceInterface{
                                 .time(appointment.getTime())
                                 .specialty(appointment.getDoctor().getSpecialties())
                                 .id(appointment.getId())
+                                .image(transform(appointment.getDoctor().getImage()))
                                 .build();
     }
 
