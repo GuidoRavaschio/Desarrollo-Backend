@@ -99,22 +99,19 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public AuthenticationResponse editUser(String code, UserRequest userRequest) {
+    public void editUser(String code, UserRequest userRequest) {
         User u = getUser(code);
         String name = userRequest.getName();
         if (name != null){
             u.setName(name);
         }
-        String email = userRequest.getEmail();
-        if (email != null){
-            u.setEmail(email);
+        int DNI = userRequest.getDNI();
+        if (DNI != 0){
+            u.setDNI(DNI);
         }
         userRepository.save(u);
         List<String> emailContent = emailService.createEmailContentForUser(u.getName(), "editado");
         emailService.sendEmail(u.getEmail(), emailContent.get(0), emailContent.get(1));
-        return AuthenticationResponse.builder()
-                                    .authToken(jwt.generateToken(u.getEmail()))
-                                    .build();
     }
 
     @Override

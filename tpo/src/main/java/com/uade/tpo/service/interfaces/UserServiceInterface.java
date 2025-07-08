@@ -13,7 +13,7 @@ public interface UserServiceInterface {
     public User getUser(String code);
     public void userAuthority(User user, Role role);
     public void deleteUser(String code);
-    public AuthenticationResponse editUser(String code, UserRequest userRequest);
+    public void editUser(String code, UserRequest userRequest);
     public void uploadInsurance(String code, UserRequest userRequest);
     public UserRequest getInsurance(String code);
     public void requestChangePassword(String email);

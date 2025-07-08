@@ -93,8 +93,6 @@ public class AppointmentController {
     public ResponseEntity<?> setImage(@PathVariable Long appointmentId,
             @RequestParam("file") MultipartFile file,
             @RequestHeader("Authorization") String code) throws SQLException, IOException {
-        User u = userService.getUser(code);
-        userService.userAuthority(u, Role.ADMIN);
         appointmentService.setImage(appointmentId, file);
         return ResponseEntity.ok().build();
     }

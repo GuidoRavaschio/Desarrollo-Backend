@@ -153,18 +153,26 @@ public class AppointmentService implements AppointmentServiceInterface{
     }
 
     @Override
-    public void setImage(Long appointment_id, MultipartFile image) throws SQLException, IOException {
+public void setImage(Long appointment_id, MultipartFile image) {
+    try {
         if (image != null && !image.isEmpty()) {
             byte[] imageBytes = image.getBytes();
-            Blob blob =  new SerialBlob(imageBytes);
+            Blob blob = new SerialBlob(imageBytes);
             Appointment a = appointmentRepository.findById(appointment_id)
                             .orElseThrow(() -> new RuntimeException("El turno no existe"));
             a.setImage(blob);
             appointmentRepository.save(a);
-        }else{
+        } else {
             throw new RuntimeException("No hay imagen adjunta");
         }
+    } catch (SQLException e) {
+        // Manejo específico de SQLException
+        throw new RuntimeException("Error al guardar la imagen en la base de datos", e);
+    } catch (IOException e) {
+        // Manejo específico de IOException
+        throw new RuntimeException("Error al leer el archivo de imagen", e);
     }
+}
 
     public void createAppointmentBySpecialties(Specialties specialties, LocalDate date, LocalTime time, User user){
         List<Doctor> doctors = doctorRepository.findBySpecialties(specialties);
