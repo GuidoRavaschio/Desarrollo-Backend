@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uade.tpo.entity.User;
 import com.uade.tpo.entity.dto.RegisterRequest;
 import com.uade.tpo.entity.dto.TdRequest;
 import com.uade.tpo.entity.dto.UserRequest;
@@ -65,10 +64,7 @@ public class UserController {
     }
     
     @PutMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@RequestBody UserRequest userRequest, 
-                @RequestHeader("Authorization") String code) {
-        User u = userService.getUser(code);
-        userRequest.setEmail(u.getEmail());
+    public ResponseEntity<Void> changePassword(@RequestBody UserRequest userRequest) {
         userService.changePassword(userRequest);
         return ResponseEntity.ok().build();
     }
