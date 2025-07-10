@@ -107,6 +107,17 @@ public class EmailService {
 
     private String loadTemplate(String path, Map<String, String> replacements) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
+        try (var inputStream = resource.getInputStream()) {
+            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                content = content.replace("{{" + entry.getKey() + "}}", entry.getValue());
+            }
+            return content;
+        }
+    }
+
+    private String loadTemplateLocal(String path, Map<String, String> replacements) throws IOException {
+        ClassPathResource resource = new ClassPathResource(path);
         String content = Files.readString(resource.getFile().toPath(), StandardCharsets.UTF_8);
         for (Map.Entry<String, String> entry : replacements.entrySet()) {
             content = content.replace("{{" + entry.getKey() + "}}", entry.getValue());
