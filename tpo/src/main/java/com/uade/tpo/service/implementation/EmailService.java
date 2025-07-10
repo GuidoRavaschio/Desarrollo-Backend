@@ -1,14 +1,23 @@
 package com.uade.tpo.service.implementation;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage; // ✅ CORRECTO para Spring Boot 3+
 
 @Service
 public class EmailService {
@@ -20,46 +29,88 @@ public class EmailService {
     private JavaMailSender emailSender;
 
     public void sendEmail(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);  
-        message.setTo(to);  
-        message.setSubject(subject); 
-        message.setText(text); 
-
-        emailSender.send(message);
+        try {
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text, true); // HTML enabled
+            emailSender.send(message);
+        } catch (MessagingException | MailException e) {
+            throw new RuntimeException("Error al cargar el contenido del correo.");
+        }
     }
 
-    public List<String> createEmailContentForAppointment(Long id, LocalDate date, LocalTime time, String name_doctor, String action){
-        String subject = "Turno n°" + Long.toString(id) + " " + action;
-        String one = "Tu turno fue " + action + " con exito:\n";
-        String two = "Dia: " + date.toString() + "\n";
-        String three = "Hora: " + time.toString() + "\n";
-        String four = "Profesional: " + name_doctor + "\n \n";
-        String five = "Gracias por usar nuestra pagina :)";
-        String text = one + two + three + four + five;
-        return List.of(subject, text);
+    public List<String> createEmailContentForAppointment(Long id, LocalDate date, LocalTime time, String name_doctor, String action) {
+        String subject = "Turno N°" + id + " " + action;
+        try {
+            Map<String, String> data = Map.of(
+                "action", action,
+                "date", date.toString(),
+                "time", time.toString(),
+                "doctor", name_doctor
+            );
+            String html = loadTemplate("templates/appointment_email.html", data);
+            return List.of(subject, html);
+        } catch (IOException e) {
+            return List.of(subject, "Error al cargar el contenido del correo.");
+        }
     }
 
-    public List<String> createEmailContentForInsurance(String digits, String insurance, String action){
+
+    public List<String> createEmailContentForInsurance(String digits, String insurance, String action) {
         String subject = "Obra Social " + action + " correctamente";
-        String one = "Su obra social ha sido " + action + " con exito. Para confirmar, verifique los siguientes datos:\n";
-        String two = "Obra Social: " + insurance + "\n";
-        String three = "Numero de afiliado: Termina en" + digits + "\n";
-        String four = "Gracias por usar nuestra pagina :)";
-        String text = one + two + three + four;
-        return List.of(subject, text);
+        try {
+            Map<String, String> data = Map.of(
+                "action", action,
+                "insurance", insurance,
+                "digits", digits
+            );
+            String html = loadTemplate("templates/insurance_email.html", data);
+            return List.of(subject, html);
+        } catch (IOException e) {
+            return List.of(subject, "Error al cargar el contenido del correo.");
+        }
     }
 
-    public List<String> createEmailContentForUser(String name, String action){
+
+    public List<String> createEmailContentForUser(String name, String action) {
         String subject = name + " " + action;
-        String text = "Querido " + name + ", tu perfil ha sido " + action;
-        return List.of(subject, text);
+        try {
+            Map<String, String> data = Map.of(
+                "name", name,
+                "action", action
+            );
+            String html = loadTemplate("templates/user_email.html", data);
+            return List.of(subject, html);
+        } catch (IOException e) {
+            return List.of(subject, "Error al cargar el contenido del correo.");
+        }
     }
 
-    public List<String> createEmailContentForCode(int code, String name){
-        String subject = "Su codigo  para el cambio de contraseña es [" + Integer.toString(code) + "]";
-        String text1 = "Querido " + name + ", su codigo  para el cambio de contraseña es [" + Integer.toString(code) + "] \n ";
-        String text = text1 + "Advertencia: el codigo expirará en 5 minutos. Asegure utilizarlo en ese lapso de tiempo";
-        return List.of(subject, text);
+
+    public List<String> createEmailContentForCode(int code, String name) {
+        String subject = "Tu código para cambiar la contraseña es [" + code + "]";
+        try {
+            Map<String, String> data = Map.of(
+                "name", name,
+                "code", String.valueOf(code)
+            );
+            String html = loadTemplate("templates/code_email.html", data);
+            return List.of(subject, html);
+        } catch (IOException e) {
+            return List.of(subject, "Error al cargar el contenido del correo.");
+        }
+    }
+
+
+    private String loadTemplate(String path, Map<String, String> replacements) throws IOException {
+        ClassPathResource resource = new ClassPathResource(path);
+        String content = Files.readString(resource.getFile().toPath(), StandardCharsets.UTF_8);
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            content = content.replace("{{" + entry.getKey() + "}}", entry.getValue());
+        }
+        return content;
     }
 }
