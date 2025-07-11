@@ -58,6 +58,8 @@ public class UserService implements UserServiceInterface {
                         user.setRole(registerRequest.getRole());
                 }
                 userRepository.save(user);
+        List<String> emailContent = emailService.createEmailContentForUser(user.getName(), "creado");
+        emailService.sendEmail(user.getEmail(), emailContent.get(0), emailContent.get(1));
         return AuthenticationResponse.builder()
                                     .authToken(jwt.generateToken(registerRequest.getEmail()))
                                     .build();

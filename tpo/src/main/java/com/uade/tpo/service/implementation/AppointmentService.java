@@ -35,6 +35,8 @@ public class AppointmentService implements AppointmentServiceInterface{
 
     private final DoctorRepository doctorRepository;
 
+    private final EmailService emailService;
+
     @Override
     public void createAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor) {
         LocalDate date = appointmentRequest.getDate();
@@ -47,6 +49,8 @@ public class AppointmentService implements AppointmentServiceInterface{
         a.setTime(time);
         a.setDoctor(doctor);
         appointmentRepository.save(a);
+        List<String> emailContent = emailService.createEmailContentForAppointment(doctor.getId(), date, time, doctor.getName(), "creado");
+        emailService.sendEmail(user.getEmail(), emailContent.get(0), emailContent.get(1));
     }
 
     @Override
@@ -71,6 +75,8 @@ public class AppointmentService implements AppointmentServiceInterface{
         Appointment a = appointmentRepository.findById(appointmentRequest.getId()).orElseThrow(() -> new RuntimeException("No existe ese turno"));
         if (Objects.equals(a.getUser().getId(), user.getId())){
             appointmentRepository.delete(a);
+            List<String> emailContent = emailService.createEmailContentForAppointment(a.getDoctor().getId(), a.getDate(), a.getTime(), a.getDoctor().getName(), "eliminado");
+            emailService.sendEmail(user.getEmail(), emailContent.get(0), emailContent.get(1));
         }else{
             throw new RuntimeException("No tienes acceso a este turno ya que el turno no te pertenece");
         }
@@ -181,9 +187,9 @@ public void setImage(Long appointment_id, MultipartFile image) {
         }
         int i = 0;
         boolean notCreated = true;
+        Appointment a = new Appointment();
         while (i < doctors.size()){
             if (!appointmentRepository.checkAppointment(time, doctors.get(i).getId(), date)){
-                Appointment a = new Appointment();
                 a.setUser(user);
                 a.setDate(date);
                 a.setTime(time);
@@ -196,6 +202,9 @@ public void setImage(Long appointment_id, MultipartFile image) {
         }
         if (notCreated){
             throw new RuntimeException("No hay doctores disponibles para este turno");
+        }else{
+            List<String> emailContent = emailService.createEmailContentForAppointment(a.getDoctor().getId(), a.getDate(), a.getTime(), a.getDoctor().getName(), "creado");
+            emailService.sendEmail(user.getEmail(), emailContent.get(0), emailContent.get(1));
         }
     }
 }

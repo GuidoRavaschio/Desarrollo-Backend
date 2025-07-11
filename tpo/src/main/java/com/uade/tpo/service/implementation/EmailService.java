@@ -2,7 +2,6 @@ package com.uade.tpo.service.implementation;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -17,7 +16,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage; // ✅ CORRECTO para Spring Boot 3+
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
@@ -115,7 +114,7 @@ public class EmailService {
             return content;
         }
     }
-
+/* 
     private String loadTemplateLocal(String path, Map<String, String> replacements) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
         String content = Files.readString(resource.getFile().toPath(), StandardCharsets.UTF_8);
@@ -124,4 +123,5 @@ public class EmailService {
         }
         return content;
     }
+*/
 }
