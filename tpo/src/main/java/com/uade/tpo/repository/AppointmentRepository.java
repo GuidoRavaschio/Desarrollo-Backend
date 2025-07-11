@@ -5,11 +5,14 @@ import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.uade.tpo.entity.Appointment;
 import com.uade.tpo.entity.enumerations.Specialties;
+
+import jakarta.transaction.Transactional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     @Query("SELECT COUNT(a) >= 1 FROM Appointment a WHERE a.user.id = :user_id AND a.time = :time AND a.doctor.id = :doctor_id AND a.date = :date")
@@ -27,6 +30,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("SELECT a FROM Appointment a WHERE a.user.id = :user_id AND a.date > :date ORDER BY a.date ASC, a.time ASC")
     List<Appointment> findByUserId(@Param("user_id") Long user_id, @Param("date") LocalDate date);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Appointment a WHERE a.user.id = :user_id")
+    int deleteByUserId(@Param("user_id") Long user_id);
 
     boolean existsByUserIdAndDoctorIdAndDateAndTime(Long userId, Long doctorId, LocalDate date, LocalTime time);
     boolean existsByDoctorIdAndDateAndTime(Long doctorId, LocalDate date, LocalTime time);

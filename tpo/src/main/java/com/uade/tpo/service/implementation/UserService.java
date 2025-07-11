@@ -17,6 +17,7 @@ import com.uade.tpo.entity.dto.TdRequest;
 import com.uade.tpo.entity.dto.UserRequest;
 import com.uade.tpo.entity.enumerations.Company;
 import com.uade.tpo.entity.enumerations.Role;
+import com.uade.tpo.repository.AppointmentRepository;
 import com.uade.tpo.repository.TemporaryDataRepository;
 import com.uade.tpo.repository.UserRepository;
 import com.uade.tpo.security.AuthenticationResponse;
@@ -39,6 +40,9 @@ public class UserService implements UserServiceInterface {
 
     @Autowired
     private CryptoService cryptoService;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
     private Jwt jwt;
@@ -96,6 +100,8 @@ public class UserService implements UserServiceInterface {
     public void deleteUser(String code) {
         User u = getUser(code);
         List<String> emailContent = emailService.createEmailContentForUser(u.getName(), "eliminado");
+        appointmentRepository.deleteByUserId(u.getId());
+        tdRepository.deleteByUser(u);
         userRepository.delete(u);
         emailService.sendEmail(u.getEmail(), emailContent.get(0), emailContent.get(1));
     }
