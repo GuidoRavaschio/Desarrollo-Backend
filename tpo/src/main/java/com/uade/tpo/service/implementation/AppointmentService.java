@@ -40,7 +40,7 @@ public class AppointmentService implements AppointmentServiceInterface{
 
     private final EmailService emailService;
 
-    @Scheduled(fixedRate = 86400) // cada 1 minuto
+    @Scheduled(fixedRate = 86400000)
     @Transactional
     public void sendAppointmentReminders() {
         LocalDateTime now = LocalDateTime.now();
