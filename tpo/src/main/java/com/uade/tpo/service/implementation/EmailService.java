@@ -103,6 +103,21 @@ public class EmailService {
         }
     }
 
+    public List<String> createEmailContentForReminder(LocalDate date, LocalTime time, String name_doctor) {
+    String subject = "📢 Recordatorio: turno en 24 horas";
+    try {
+        Map<String, String> data = Map.of(
+            "date", date.toString(),
+            "time", time.toString(),
+            "doctor", name_doctor
+        );
+        String html = loadTemplate("templates/reminder_email.html", data);
+        return List.of(subject, html);
+    } catch (IOException e) {
+        return List.of(subject, "Error al cargar el contenido del correo.");
+    }
+}
+
 
     private String loadTemplate(String path, Map<String, String> replacements) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);

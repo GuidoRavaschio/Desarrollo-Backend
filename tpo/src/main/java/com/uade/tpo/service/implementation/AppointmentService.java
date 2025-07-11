@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Base64;
 import java.util.List;
@@ -12,7 +13,9 @@ import java.util.stream.Collectors;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.uade.tpo.entity.Appointment;
@@ -36,6 +39,32 @@ public class AppointmentService implements AppointmentServiceInterface{
     private final DoctorRepository doctorRepository;
 
     private final EmailService emailService;
+
+    @Scheduled(fixedRate = 60000) // cada 1 minuto
+    @Transactional
+    public void sendAppointmentReminders() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime in24h = now.plusHours(24);
+
+        List<Appointment> upcomingAppointments = appointmentRepository.findAppointmentsBetween(
+            now.toLocalDate(), now.toLocalTime(),
+            in24h.toLocalDate(), in24h.toLocalTime()
+        );
+
+        for (Appointment appointment : upcomingAppointments) {
+            User user = appointment.getUser();
+            Doctor doctor = appointment.getDoctor();
+
+            List<String> emailContent = emailService.createEmailContentForReminder(
+                appointment.getDate(),
+                appointment.getTime(),
+                doctor.getName()
+            );
+
+            emailService.sendEmail(user.getEmail(), emailContent.get(0), emailContent.get(1));
+        }
+    }
+
 
     @Override
     public void createAppointment(AppointmentRequest appointmentRequest, User user, Doctor doctor) {

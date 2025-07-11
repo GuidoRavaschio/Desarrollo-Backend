@@ -40,4 +40,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("SELECT a FROM Appointment a WHERE a.user.id = :user_id AND a.date < :date ORDER BY a.date DESC, a.time DESC")
     List<Appointment> findPreviousAppointmentsByUserId(@Param("user_id") Long user_id, @Param("date") LocalDate date);
+
+    @Query("""
+    SELECT a
+    FROM Appointment a
+    WHERE
+        (a.date = :startDate AND a.time >= :startTime) OR
+        (a.date = :endDate AND a.time <= :endTime) OR
+        (a.date > :startDate AND a.date < :endDate)
+""")
+List<Appointment> findAppointmentsBetween(
+        @Param("startDate") LocalDate startDate,
+        @Param("startTime") LocalTime startTime,
+        @Param("endDate")   LocalDate endDate,
+        @Param("endTime")   LocalTime endTime
+);
+
 }
