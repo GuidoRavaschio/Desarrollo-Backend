@@ -40,7 +40,7 @@ public class AppointmentService implements AppointmentServiceInterface{
 
     private final EmailService emailService;
 
-    @Scheduled(fixedRate = 60000) // cada 1 minuto
+    @Scheduled(fixedRate = 86400) // cada 1 minuto
     @Transactional
     public void sendAppointmentReminders() {
         LocalDateTime now = LocalDateTime.now();
@@ -80,7 +80,14 @@ public class AppointmentService implements AppointmentServiceInterface{
         appointmentRepository.save(a);
         List<String> emailContent = emailService.createEmailContentForAppointment(doctor.getId(), date, time, doctor.getName(), "creado");
         emailService.sendEmail(user.getEmail(), emailContent.get(0), emailContent.get(1));
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime appointmentDate = LocalDateTime.of(date,time);
+        if (!appointmentDate.isBefore(now) && appointmentDate.isBefore(now.plusHours(24))) {
+            List<String> reminderContent = emailService.createEmailContentForReminder(date, time, doctor.getName());
+            emailService.sendEmail(user.getEmail(), reminderContent.get(0), reminderContent.get(1));
     }
+}
+
 
     @Override
     public List<AppointmentData> getAppointments(User user) {
